@@ -2,94 +2,104 @@
 
 ### Codigo
 ```c++
-// Load Wi-Fi library
+//Carga la libreria WiFi
 #include <WiFi.h>
 
-// Replace with your network credentials
-const char* ssid = "MishMashLabs";
-const char* password = "mishmash";
+//Agregar las credenciales Wifi
+const char* ssid = "SSID";
+const char* password = "PASSWORD";
 
-// Set web server port number to 80
+//Establece la web server en el puerto 80
 WiFiServer server(80);
 
-// Variable to store the HTTP request
+//Variable para almacenar la solicitud HTTP
 String header;
 
-// Auxiliar variables to store the current output state
+//Variables auxiliares para almacenar el estado de salida actual
 String output15State = "off";
 String output4State = "off";
 
-// Assign output variables to GPIO pins
+//Asigne variables de salida a los pines GPIO
 const int output15 = 15;
 const int output4 = 4;
 
-// Current time
+//Tiempo actual
 unsigned long currentTime = millis();
-// Previous time
-unsigned long previousTime = 0; 
-// Define timeout time in milliseconds (example: 2000ms = 2s)
+
+//Momento anterior
+unsigned long previousTime = 0;
+
+//Defina el tiempo de espera en milisegundos (ejemplo: 2000ms = 2s)
 const long timeoutTime = 2000;
 
-// Define Authentication
-const char* base64Encoding = "TWlzaE1hc2hMYWJzOm1pc2htYXNo";  // base64encoding user:pass - "dXNlcjpwYXNz", MishMashLabs:mishmash - "TWlzaE1hc2hMYWJzOm1pc2htYXNo"
+//Defina la autenticacion
+const char* base64Encoding = "dXN1YXJpbzpjbGF2ZQ==";  //esta en base64encoding en este caso user:clave
 
 
-void setup() {
+void setup()
+{
+  //Inicia el puerto serial
   Serial.begin(115200);
-  // Initialize the output variables as outputs
+
+  //Inicializar las variables de salida como salidas
   pinMode(output15, OUTPUT);
   pinMode(output4, OUTPUT);
-  // Set outputs to LOW
+
+  //Establece los GPIO de salida como LOW
   digitalWrite(output15, LOW);
   digitalWrite(output4, LOW);
 
-  // Connect to Wi-Fi network with SSID and password
-  Serial.print("Connecting to ");
+  //Conecta a la red WiFi con la SSID y el password
+  Serial.print("Conectando ");
   Serial.println(ssid);
   WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED) {
+  while (WiFi.status() != WL_CONNECTED)
+  {
     delay(500);
     Serial.print(".");
   }
-  // Print local IP address and start web server
+  //Imprime la direccion IP local y inicia la web server
   Serial.println("");
-  Serial.println("WiFi connected.");
-  Serial.println("IP address: ");
+  Serial.println("WiFi conectado.");
+  Serial.println("IP direccion: ");
   Serial.println(WiFi.localIP());
   server.begin();
 }
 
-void loop(){
+void loop() {
   WiFiClient client = server.available();   // Listen for incoming clients
 
-  if (client) {                             // If a new client connects,
+  if (client)
+  { //Si un nuevo cliente se a conectado
     currentTime = millis();
     previousTime = currentTime;
-    Serial.println("New Client.");          // print a message out in the serial port
-    String currentLine = "";                // make a String to hold incoming data from the client
-    while (client.connected() && currentTime - previousTime <= timeoutTime) {  // loop while the client's connected
+    Serial.println("New Client.");          // Imprime un mennsaje de salida en el puerto serial
+    String currentLine = "";                //Hace una cadena para contener los datos entrantes del cliente
+
+    while (client.connected() && currentTime - previousTime <= timeoutTime)  //loop while mientras el cliente esta conectado
+    {
       currentTime = millis();
-      if (client.available()) {             // if there's bytes to read from the client,
-        char c = client.read();             // read a byte, then
-        Serial.write(c);                    // print it out the serial monitor
+      if (client.available()) {             //Si hay bytes para leer del cliente
+        char c = client.read();             //leer un byte, entonces
+        Serial.write(c);                    //imprime en el monitor serie
         header += c;
-        if (c == '\n') {                    // if the byte is a newline character
-          // if the current line is blank, you got two newline characters in a row.
-          // that's the end of the client HTTP request, so send a response:
+        if (c == '\n') {                    //Si el byte es un carácter de nueva línea
+          //si la línea actual está en blanco, tienes dos caracteres de nueva línea seguidos.
+          //ese es el final de la solicitud HTTP del cliente, así que envíe una respuesta:
           if (currentLine.length() == 0) {
-            // check base64 encode for authentication
-            // Finding the right credentials
-            if (header.indexOf(base64Encoding)>=0)
+            //verifique la codificación base64 para la autenticación
+            //Encontrar las credenciales correctas
+            if (header.indexOf(base64Encoding) >= 0)
             {
-            
-              // HTTP headers always start with a response code (e.g. HTTP/1.1 200 OK)
-              // and a content-type so the client knows what's coming, then a blank line:
+
+              //Los encabezados HTTP siempre comienzan con un código de respuesta (e.g. HTTP/1.1 200 OK)
+              //y un tipo de contenido para que el cliente sepa lo que viene, luego una línea en blanco:
               client.println("HTTP/1.1 200 OK");
               client.println("Content-type:text/html");
               client.println("Connection: close");
               client.println();
-              
-              // turns the GPIOs on and off
+
+              //enciende y apaga los GPIO
               if (header.indexOf("GET /15/on") >= 0) {
                 Serial.println("GPIO 15 on");
                 output15State = "on";
@@ -107,67 +117,84 @@ void loop(){
                 output4State = "off";
                 digitalWrite(output4, LOW);
               }
-              
-              // Display the HTML web page
+
+              //Mostrar la página web HTML
               client.println("<!DOCTYPE html><html>");
               client.println("<head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">");
               client.println("<link rel=\"icon\" href=\"data:,\">");
-              // CSS to style the on/off buttons 
-              // Feel free to change the background-color and font-size attributes to fit your preferences
+              //CSS para dar estilo a los botones de encendido/apagado
+              //Siéntase libre de cambiar los atributos de color de fondo y tamaño de fuente para que se ajusten a sus preferencias
               client.println("<style>html { font-family: Helvetica; display: inline-block; margin: 0px auto; text-align: center;}");
               client.println(".button { background-color: #4CAF50; border: none; color: white; padding: 16px 40px;");
               client.println("text-decoration: none; font-size: 30px; margin: 2px; cursor: pointer;}");
               client.println(".button2 {background-color: #555555;}</style></head>");
-              
-              // Web Page Heading
+
+              //Encabezado de página web
               client.println("<body><h1>ESP32 Web Server</h1>");
-              
-              // Display current state, and ON/OFF buttons for GPIO 15  
-              client.println("<p>GPIO 15 - State " + output15State + "</p>");
-              // If the output15State is off, it displays the ON button       
-              if (output15State=="off") {
+
+              //Muestra el estado actual y los botones ON/OFF para GPIO 15
+              client.println("<p>GPIO 15 - Estado " + output15State + "</p>");
+
+              //Si el estado de salida 15 está apagado, muestra el botón ENCENDIDO
+              if (output15State == "off")
+              {
                 client.println("<p><a href=\"/15/on\"><button class=\"button\">ON</button></a></p>");
-              } else {
+              }
+              else
+              {
                 client.println("<p><a href=\"/15/off\"><button class=\"button button2\">OFF</button></a></p>");
-              } 
-                 
-              // Display current state, and ON/OFF buttons for GPIO 4  
-              client.println("<p>GPIO 4 - State " + output4State + "</p>");
-              // If the output4State is off, it displays the ON button       
-              if (output4State=="off") {
+              }
+
+              //Muestra el estado actual y los botones ON/OFF para GPIO 4
+              client.println("<p>GPIO 4 - Estado " + output4State + "</p>");
+
+              //Si el estado de la salida 4 está apagado, muestra el botón ON
+              if (output4State == "off")
+              {
                 client.println("<p><a href=\"/4/on\"><button class=\"button\">ON</button></a></p>");
-              } else {
+              }
+              else
+              {
                 client.println("<p><a href=\"/4/off\"><button class=\"button button2\">OFF</button></a></p>");
               }
               client.println("</body></html>");
-              
-              // The HTTP response ends with another blank line
+
+              //La respuesta HTTP termina con otra línea en blanco
               client.println();
-              // Break out of the while loop
+              //Salir del bucle while
               break;
             }
-            else{
+            else 
+            {
               client.println("HTTP/1.1 401 Unauthorized");
               client.println("WWW-Authenticate: Basic realm=\"Secure\"");
               client.println("Content-Type: text/html");
               client.println();
               client.println("<html>Authentication failed</html>");
             }
-          } else { // if you got a newline, then clear currentLine
+          } 
+          else 
+          { 
+            //si tiene una nueva línea, borre currentLine
             currentLine = "";
           }
-        } else if (c != '\r') {  // if you got anything else but a carriage return character,
-          currentLine += c;      // add it to the end of the currentLine
+        } 
+        else if (c != '\r') 
+        { 
+          //si tiene algo más que un carácter de retorno de carro,
+          currentLine += c;      //agréguelo al final de la línea actual
         }
       }
     }
-    // Clear the header variable
+    //Borrar la variable de encabezado
     header = "";
-    // Close the connection
+    
+    //Cerrrar la conexion
     client.stop();
+
+    //Imprime en el puerto serial
     Serial.println("Client disconnected.");
     Serial.println("");
   }
 }
-
 ```
