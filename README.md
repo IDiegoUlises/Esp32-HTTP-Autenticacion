@@ -1,6 +1,7 @@
 # Esp32-HTTP-Autenticacion
 
 <img src="https://github.com/IDiegoUlises/Esp32-HTTP-Autenticacion/blob/main/images/IMG_20230606_214023.jpg" width="400" height="800" />
+* Para acceder pide un nombre de usuario y una contraseña
 
 ### Codigo
 ```c++
