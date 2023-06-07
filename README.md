@@ -202,5 +202,7 @@ void loop() {
   }
 }
 ```
-### Pagina Web
+### Pagina Web al identificarse
 <img src="https://github.com/IDiegoUlises/Esp32-HTTP-Autenticacion/blob/main/images/IMG_20230606_214004.jpg" width="400" height="800" />
+
+### Para el usuario y la clave debe estar codificando en base64
