@@ -203,7 +203,7 @@ void loop() {
 }
 ```
 ### Pagina Web al identificarse
-<img src="https://github.com/IDiegoUlises/Esp32-HTTP-Autenticacion/blob/main/images/IMG_20230606_215405.jpg" width="400" height="800" />
+<img src="https://github.com/IDiegoUlises/Esp32-HTTP-Autenticacion/blob/main/images/IMG_20230606_215405.jpg" width="500" height="800" />
 
 ### Para el usuario y la clave debe estar codificando en base64
 <img src="https://github.com/IDiegoUlises/Esp32-HTTP-Autenticacion/blob/main/images/IMG_20230606_213933.jpg" width="400" height="800" />
